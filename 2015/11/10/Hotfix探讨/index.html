@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Android Hotfix探讨 | Eklett</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="背景  当一个App发布之后，突然发现了一个严重bug需要进行紧急修复，这时候整个流程大概是这样的：修复bug、重新打包App、测试、向各个应用市场和渠道换包、提示用户升级、用户下载、覆盖安装。有时候仅仅是为了修改了一行代码，也要付出巨大的成本进行换包和重新发布，而且不能保证用户一定会去下载覆盖更新，造成损失。
+  所以需要一个方案，以补丁方式动态地修复bug。这个方案不需要重新发布版本就能替换掉">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android Hotfix探讨">
+<meta property="og:url" content="https://github.com/Eklett/eklett.github.io.git/2015/11/10/Hotfix探讨/index.html">
+<meta property="og:site_name" content="Eklett">
+<meta property="og:description" content="背景  当一个App发布之后，突然发现了一个严重bug需要进行紧急修复，这时候整个流程大概是这样的：修复bug、重新打包App、测试、向各个应用市场和渠道换包、提示用户升级、用户下载、覆盖安装。有时候仅仅是为了修改了一行代码，也要付出巨大的成本进行换包和重新发布，而且不能保证用户一定会去下载覆盖更新，造成损失。
+  所以需要一个方案，以补丁方式动态地修复bug。这个方案不需要重新发布版本就能替换掉">
+<meta property="og:updated_time" content="2015-11-20T06:41:16.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android Hotfix探讨">
+<meta name="twitter:description" content="背景  当一个App发布之后，突然发现了一个严重bug需要进行紧急修复，这时候整个流程大概是这样的：修复bug、重新打包App、测试、向各个应用市场和渠道换包、提示用户升级、用户下载、覆盖安装。有时候仅仅是为了修改了一行代码，也要付出巨大的成本进行换包和重新发布，而且不能保证用户一定会去下载覆盖更新，造成损失。
+  所以需要一个方案，以补丁方式动态地修复bug。这个方案不需要重新发布版本就能替换掉">
+  
+    <link rel="alternative" href="/atom.xml" title="Eklett" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  <link rel="stylesheet" href="/css/style.css" type="text/css">
+</head>
+<body>
+  <div id="container">
+    <div class="left-col">
+    <div class="overlay"></div>
+<div class="intrude-less">
+	<header id="header" class="inner">
+		<a href="/" class="profilepic">
+			
+			<img lazy-src="/img/avatar.png" class="js-avatar">
+			
+		</a>
+
+		<hgroup>
+		  <h1 class="header-author"><a href="/">Eklett</a></h1>
+		</hgroup>
+
+		
+
+		
+			<div class="switch-btn">
+				<div class="icon">
+					<div class="icon-ctn">
+						<div class="icon-wrap icon-house" data-idx="0">
+							<div class="birdhouse"></div>
+							<div class="birdhouse_holes"></div>
+						</div>
+						<div class="icon-wrap icon-ribbon hide" data-idx="1">
+							<div class="ribbon"></div>
+						</div>
+						
+						
+					</div>
+					
+				</div>
+				<div class="tips-box hide">
+					<div class="tips-arrow"></div>
+					<ul class="tips-inner">
+						<li>菜单</li>
+						<li>标签</li>
+						
+						
+					</ul>
+				</div>
+			</div>
+		
+
+		<div class="switch-area">
+			<div class="switch-wrap">
+				<section class="switch-part switch-part1">
+					<nav class="header-menu">
+						<ul>
+						
+							<li><a href="/">主页</a></li>
+				        
+							<li><a href="/archives">所有文章</a></li>
+				        
+							<li><a href="/tags/Android">android</a></li>
+				        
+						</ul>
+					</nav>
+					<nav class="header-nav">
+						<div class="social">
+							
+								<a class="github" target="_blank" href="https://github.com/Eklett/" title="github">github</a>
+					        
+								<a class="weibo" target="_blank" href="http://weibo.com/ainyinnocent" title="weibo">weibo</a>
+					        
+								<a class="facebook" target="_blank" href="https://www.facebook.com/lan.yuleran" title="facebook">facebook</a>
+					        
+						</div>
+					</nav>
+				</section>
+				
+				
+				<section class="switch-part switch-part2">
+					<div class="widget tagcloud" id="js-tagcloud">
+						<a href="/tags/Android/" style="font-size: 20px;">Android</a> <a href="/tags/Hotfix/" style="font-size: 10px;">Hotfix</a> <a href="/tags/SeekBar/" style="font-size: 10px;">SeekBar</a> <a href="/tags/splitTrack/" style="font-size: 10px;">splitTrack</a> <a href="/tags/thumb/" style="font-size: 10px;">thumb</a> <a href="/tags/随笔/" style="font-size: 10px;">随笔</a>
+					</div>
+				</section>
+				
+				
+				
+
+				
+			</div>
+		</div>
+	</header>				
+</div>
+    </div>
+    <div class="mid-col">
+      <nav id="mobile-nav">
+  	<div class="overlay">
+  		<div class="slider-trigger"></div>
+  		<h1 class="header-author js-mobile-header hide">Eklett</h1>
+  	</div>
+	<div class="intrude-less">
+		<header id="header" class="inner">
+			<div class="profilepic">
+				<img lazy-src="/img/avatar.png" class="js-avatar">
+			</div>
+			<hgroup>
+			  <h1 class="header-author">Eklett</h1>
+			</hgroup>
+			
+			<nav class="header-menu">
+				<ul>
+				
+					<li><a href="/">主页</a></li>
+		        
+					<li><a href="/archives">所有文章</a></li>
+		        
+					<li><a href="/tags/Android">android</a></li>
+		        
+		        <div class="clearfix"></div>
+				</ul>
+			</nav>
+			<nav class="header-nav">
+				<div class="social">
+					
+						<a class="github" target="_blank" href="https://github.com/Eklett/" title="github">github</a>
+			        
+						<a class="weibo" target="_blank" href="http://weibo.com/ainyinnocent" title="weibo">weibo</a>
+			        
+						<a class="facebook" target="_blank" href="https://www.facebook.com/lan.yuleran" title="facebook">facebook</a>
+			        
+				</div>
+			</nav>
+		</header>				
+	</div>
+</nav>
+      <div class="body-wrap"><article id="post-Hotfix探讨" class="article article-type-post" itemscope itemprop="blogPost">
+  
+    <div class="article-meta">
+      <a href="/2015/11/10/Hotfix探讨/" class="article-date">
+  	<time datetime="2015-11-10T06:54:49.000Z" itemprop="datePublished">2015-11-10</time>
+</a>
+    </div>
+  
+  <div class="article-inner">
+    
+      <input type="hidden" class="isFancy" />
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Android Hotfix探讨
+    </h1>
+  
+
+      </header>
+      
+      <div class="article-info article-info-post">
+        
+	<div class="article-tag tagcloud">
+		<ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Android/">Android</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/tags/Hotfix/">Hotfix</a></li></ul>
+	</div>
+
+        
+
+        <div class="clearfix"></div>
+      </div>
+      
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h3 id="背景">背景</h3><p>  当一个App发布之后，突然发现了一个严重bug需要进行紧急修复，这时候整个流程大概是这样的：修复bug、重新打包App、测试、向各个应用市场和渠道换包、提示用户升级、用户下载、覆盖安装。有时候仅仅是为了修改了一行代码，也要付出巨大的成本进行换包和重新发布，而且不能保证用户一定会去下载覆盖更新，造成损失。</p>
+<p>  所以需要一个方案，以补丁方式动态地修复bug。这个方案不需要重新发布版本就能替换掉有问题的代码，对用户友好地不感知地覆盖安装。</p>
+<a id="more"></a>
+<h3 id="Hotfix介绍">Hotfix介绍</h3><p>  热修复一词恐怕最早应用在微软。为了巩固其windows系统和office的市场占有率，微软开发并维护了一套线上修复方案，用于修复漏洞及特定问题（LDR），避免延续到发版解决（GDR），详见HotFix<a href="https://en.wikipedia.org/wiki/Hotfix#Microsoft" target="_blank" rel="external">维基词条</a>，<a href="http://baike.baidu.com/view/351151.htm" target="_blank" rel="external">百度百科</a>。</p>
+<h3 id="解决方案介绍">解决方案介绍</h3><p>  先看下业内现在都有哪些解决方案：</p>
+<blockquote>
+<p>一、插件化</p>
+</blockquote>
+<p>对apk进行拆分为插件化的多个apk，每个apk之间相对独立，通过更新有问题的插件apk的形式的方案，进行hotfix。</p>
+<p>代表作品有：</p>
+<h4 id="1-_360的DroidPlugin">1. 360的<a href="https://github.com/Qihoo360/DroidPlugin">DroidPlugin</a></h4><h4 id="2-_携程的DynamicAPK">2. 携程的<a href="https://github.com/CtripMobile/DynamicAPK">DynamicAPK</a></h4><h4 id="3-_singwhatiwanna的DynamicLoadApk">3. singwhatiwanna的<a href="https://github.com/singwhatiwanna/dynamic-load-apk">DynamicLoadApk</a></h4><p>该库太久没维护了，再加上没有去了解和使用过，所以这里就不做说明了，有兴趣的可以去看看。原理应该都是一样的。</p>
+<h4 id="4-_mmin18的AndroidDynamicLoader">4. mmin18的<a href="https://github.com/mmin18/AndroidDynamicLoader">AndroidDynamicLoader</a></h4><p>同上。</p>
+<p> 。。。。</p>
+<blockquote>
+<p>二、Hook掉原来的java方法</p>
+</blockquote>
+<p>按实现的原理也大概可以分为两种：</p>
+<ul>
+<li><font size="4">从native层（C层）获取Method的指针，再从classLoader根据偏移量hook的方式</font>
+
+</li>
+</ul>
+<p>代表作为阿里巴巴团队的两个作品：</p>
+<h4 id="1-_dexposed">1. <a href="https://github.com/alibaba/dexposed">dexposed</a></h4><p>TODO</p>
+<h4 id="2-_AndFix">2. <a href="https://github.com/alibaba/AndFix">AndFix</a></h4><p>TODO</p>
+<ul>
+<li><font size="4"> 修改BaseDexClassLoader中的pathList，来动态加载dex</font>
+
+</li>
+</ul>
+<p>代表作：</p>
+<h4 id="1-_百度dodola同学的Hotfix">1. 百度dodola同学的<a href="https://github.com/dodola/HotFix">Hotfix</a></h4><p>  TODO</p>
+<h4 id="2-_大众点评jasonross同学的Nuwa">2. 大众点评jasonross同学的<a href="https://github.com/jasonross/Nuwa">Nuwa</a></h4><p>  TODO</p>
+<h3 id="Issue">Issue</h3><ul>
+<li>安全问题：<br>apk被破解，被第三方注入代码的隐患。<!-- * 会放弃dex optimize对启动运行速度的优化。-->
+</li>
+</ul>
+<h3 id="思考与Future">思考与Future</h3><ul>
+<li>JRebel for Android 这个加快AS编译速度的，是不是也是用了类似Nuwa这种技术，找出diff的类打包成插件安装？</li>
+<li>是不是可以弄成一个应用加固的方案？ </li>
+<li>这技术对优化我们系统cps打包有帮助？</li>
+</ul>
+<h4 id="其他参考">其他参考</h4><ul>
+<li>天猫团队的<a href="http://lirenlong.github.io/hotfix/#rd?sukey=fc78a68049a14bb2b122280ebdec7b39605209290860f5335634251c8fde8b4b7748618df85e7db8417f92b1536d83fe" target="_blank" rel="external">Android App 线上热修复方案</a></li>
+<li>QZone团队的<a href="http://bugly.qq.com/blog/?p=781" target="_blank" rel="external">让App像Web一样发布新版本</a></li>
+<li>QZone那位同学的<a href="https://github.com/jiqimaogou">github</a></li>
+<li><a href="http://blog.csdn.net/lzyzsd/article/details/49843581" target="_blank" rel="external">Android热更新实现原理</a></li>
+</ul>
+
+      
+    </div>
+    
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/2015/08/10/SeekBar-thumb背景问题/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">Android SeekBar的thumb在Api 21以上被加上白色背景问题</div>
+      <strong class="article-nav-caption">></strong>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+
+
+<div class="duoshuo">
+	<!-- 多说评论框 start -->
+	<div class="ds-thread" data-thread-key="Hotfix探讨" data-title="Android Hotfix探讨" data-url="https://github.com/Eklett/eklett.github.io.git/2015/11/10/Hotfix探讨/"></div>
+	<!-- 多说评论框 end -->
+	<!-- 多说公共JS代码 start (一个网页只需插入一次) -->
+	<script type="text/javascript">
+	var duoshuoQuery = {short_name:"eklett"};
+	(function() {
+		var ds = document.createElement('script');
+		ds.type = 'text/javascript';ds.async = true;
+		ds.src = (document.location.protocol == 'https:' ? 'https:' : 'http:') + '//static.duoshuo.com/embed.js';
+		ds.charset = 'UTF-8';
+		(document.getElementsByTagName('head')[0] 
+		 || document.getElementsByTagName('body')[0]).appendChild(ds);
+	})();
+	</script>
+	<!-- 多说公共JS代码 end -->
+</div>
+
+
+
+
+</div>
+      <footer id="footer">
+  <div class="outer">
+    <div id="footer-info">
+    	<div class="footer-left">
+    		&copy; 2015 Eklett
+    	</div>
+      	<div class="footer-right">
+      		<a href="http://hexo.io/" target="_blank">Hexo</a>  Theme <a href="https://github.com/litten/hexo-theme-yilia" target="_blank">Yilia</a> by Litten
+      	</div>
+    </div>
+  </div>
+</footer>
+    </div>
+    
+  <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" type="text/css">
+
+
+<script>
+	var yiliaConfig = {
+		fancybox: true,
+		mathjax: true,
+		animate: true,
+		isHome: false,
+		isPost: true,
+		isArchive: false,
+		isTag: false,
+		isCategory: false,
+		open_in_new: false
+	}
+</script>
+<script src="http://7.url.cn/edu/jslib/comb/require-2.1.6,jquery-1.9.1.min.js" type="text/javascript"></script>
+<script src="/js/main.js" type="text/javascript"></script>
+
+
+
+
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+        processEscapes: true,
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+});
+
+MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+        all[i].SourceElement().parentNode.className += ' has-jax';                 
+    }       
+});
+</script>
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+  </div>
+</body>
+</html>
