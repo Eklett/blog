@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="Eklett">
 <meta property="og:description" content="背景  当一个App发布之后，突然发现了一个严重bug需要进行紧急修复，这时候整个流程大概是这样的：修复bug、重新打包App、测试、向各个应用市场和渠道换包、提示用户升级、用户下载、覆盖安装。有时候仅仅是为了修改了一行代码，也要付出巨大的成本进行换包和重新发布，而且不能保证用户一定会去下载覆盖更新，造成损失。
   所以需要一个方案，以补丁方式动态地修复bug。这个方案不需要重新发布版本就能替换掉">
-<meta property="og:updated_time" content="2015-11-20T06:41:16.000Z">
+<meta property="og:updated_time" content="2015-12-08T15:41:35.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android Hotfix探讨">
 <meta name="twitter:description" content="背景  当一个App发布之后，突然发现了一个严重bug需要进行紧急修复，这时候整个流程大概是这样的：修复bug、重新打包App、测试、向各个应用市场和渠道换包、提示用户升级、用户下载、覆盖安装。有时候仅仅是为了修改了一行代码，也要付出巨大的成本进行换包和重新发布，而且不能保证用户一定会去下载覆盖更新，造成损失。
@@ -203,7 +203,29 @@
 </blockquote>
 <p>对apk进行拆分为插件化的多个apk，每个apk之间相对独立，通过更新有问题的插件apk的形式的方案，进行hotfix。</p>
 <p>代表作品有：</p>
-<h4 id="1-_360的DroidPlugin">1. 360的<a href="https://github.com/Qihoo360/DroidPlugin">DroidPlugin</a></h4><h4 id="2-_携程的DynamicAPK">2. 携程的<a href="https://github.com/CtripMobile/DynamicAPK">DynamicAPK</a></h4><h4 id="3-_singwhatiwanna的DynamicLoadApk">3. singwhatiwanna的<a href="https://github.com/singwhatiwanna/dynamic-load-apk">DynamicLoadApk</a></h4><p>该库太久没维护了，再加上没有去了解和使用过，所以这里就不做说明了，有兴趣的可以去看看。原理应该都是一样的。</p>
+<h4 id="1-_360的DroidPlugin">1. 360的<a href="https://github.com/Qihoo360/DroidPlugin">DroidPlugin</a></h4><p>它可以在无需安装、修改的情况下运行APK文件,此机制对改进大型APP的架构，实现多团队协作开发具有一定的好处。</p>
+<p>优点：</p>
+<ul>
+<li>支持Androd 2.3以上系统</li>
+<li>插件APK完全不需做任何修改，可以独立安装运行、也可以做插件运行。要以插件模式运行某个APK，你无需重新编译、无需知道其源码。</li>
+<li>插件的四大组件完全不需要在Host程序中注册，支持Service、Activity、BroadcastReceiver、ContentProvider四大组件</li>
+<li>插件之间、Host程序与插件之间会互相认为对方已经”安装”在系统上了。</li>
+<li>API低侵入性：极少的API。HOST程序只是需要一行代码即可集成Droid Plugin</li>
+<li>超强隔离：插件之间、插件与Host之间完全的代码级别的隔离：不能互相调用对方的代码。通讯只能使用Android系统级别的通讯方法。</li>
+<li>支持所有系统API</li>
+<li>资源完全隔离：插件之间、与Host之间实现了资源完全隔离，不会出现资源窜用的情况。</li>
+<li>实现了进程管理，插件的空进程会被及时回收，占用内存低。</li>
+<li>插件的静态广播会被当作动态处理，如果插件没有运行（即没有插件进程运行），其静态广播也永远不会被触发。</li>
+</ul>
+<p>缺陷：</p>
+<ul>
+<li>无法在插件中发送具有自定义资源的Notification，例如： a. 带自定义RemoteLayout的Notification b. 图标通过R.drawable.XXX指定的通知（插件系统会自动将其转化为Bitmap）</li>
+<li>无法在插件中注册一些具有特殊Intent Filter的Service、Activity、BroadcastReceiver、ContentProvider等组件以供Android系统、已经安装的其他APP调用。</li>
+<li>缺乏对Native层的Hook，对某些带native代码的apk支持不好，可能无法运行。比如一部分游戏无法当作插件运行。</li>
+</ul>
+<p>总结：<br>有一定的缺陷，但是对于开发普通的应用来说已经够用了，<a href="https://github.com/Qihoo360/DroidPlugin/blob/master/readme_cn.md">使用方法</a>也很简单。但是资源完全隔离，就是说相同的资源宿主apk和插件apk都要有，这样会增加整个apk的文件大小，作为补丁方案，对于有bug的插件apk，则需要更新插件apk才能做到补丁，同样，用户也需要下载更新的整个插件apk，即时修改的只有一行代码。另外如果插件apk多了，可能管理起来也不方便。</p>
+<h4 id="2-_携程的DynamicAPK">2. 携程的<a href="https://github.com/CtripMobile/DynamicAPK">DynamicAPK</a></h4><p>看了一下它的issue，发现该项目作者用了大量手淘团队成员的代码，正在干架中。使用aapt命令行来生成和合并R文件，对aapt不熟，也就不打算用这个了。</p>
+<h4 id="3-_singwhatiwanna的DynamicLoadApk">3. singwhatiwanna的<a href="https://github.com/singwhatiwanna/dynamic-load-apk">DynamicLoadApk</a></h4><p>该库太久没维护了，再加上没有去了解和使用过，所以这里就不做说明了，有兴趣的可以去看看。原理应该都是一样的。</p>
 <h4 id="4-_mmin18的AndroidDynamicLoader">4. mmin18的<a href="https://github.com/mmin18/AndroidDynamicLoader">AndroidDynamicLoader</a></h4><p>同上。</p>
 <p> 。。。。</p>
 <blockquote>
@@ -216,8 +238,11 @@
 </li>
 </ul>
 <p>代表作为阿里巴巴团队的两个作品：</p>
-<h4 id="1-_dexposed">1. <a href="https://github.com/alibaba/dexposed">dexposed</a></h4><p>TODO</p>
-<h4 id="2-_AndFix">2. <a href="https://github.com/alibaba/AndFix">AndFix</a></h4><p>TODO</p>
+<h4 id="1-_dexposed">1. <a href="https://github.com/alibaba/dexposed">dexposed</a></h4><p>基于Xposed的AOP框架，方法级粒度，可以进行AOP编程、插桩、热补丁、SDK hook等功能。</p>
+<p>原理：</p>
+<p>应用启动的时候，都会fork zygote进程，装载class和invoke各种初始化方法，Xposed就是在这个过程中，替换了app_process，hook了各种入口级方法（比如handleBindApplication、ServerThread、ActivityThread、ApplicationPackageManager的getResourcesForApplication等），加载XposedBridge.jar提供动态hook基础。<br>其具体native实现则在Xposed的libxposed_common.cpp里面有注册，根据系统版本分发到libxposed_dalvik和libxposed_art里面，以dalvik为例大致来说就是记录下原来的方法信息，并把方法指针指向我们的hookedMethodCallback，从而实现拦截的目的。更具体请看参考。</p>
+<p>Dexposed不支持Art模式（5.0+），且写补丁有点困难，需要反射写混淆后的代码，粒度太细，要替换的方法多的话，工作量会比较大。并且感觉作者要放弃该项目了，所以这不是一个很好的hotfix方案。</p>
+<h4 id="2-_AndFix">2. <a href="https://github.com/alibaba/AndFix">AndFix</a></h4><p>原理可能跟dexposed的差不多，都是在Native层修改指针来实现。Demo时在我的一加1手机上不成功，所以也没有具体去看，还想等着她完善再跟进，后面Qzone团队的方案就出来了。</p>
 <ul>
 <li><font size="4"> 修改BaseDexClassLoader中的pathList，来动态加载dex</font>
 
@@ -231,15 +256,16 @@
 </li>
 </ul>
 <h3 id="思考与Future">思考与Future</h3><ul>
-<li>JRebel for Android 这个加快AS编译速度的，是不是也是用了类似Nuwa这种技术，找出diff的类打包成插件安装？</li>
-<li>是不是可以弄成一个应用加固的方案？ </li>
-<li>这技术对优化我们系统cps打包有帮助？</li>
+<li>JRebel for Android 这个加快AS编译速度的，是不是也是用了类似Nuwa这种技术，找出diff的类打包成插件安装？(才想到这种方案没几天AS2.0预览版就出了，支持了instant run，虽然instant run还有很多不完善的地方，可以看到Google的诚意了，期待以后的完善吧。[update at 2015-12-08 23:37:47])</li>
+<li>是不是可以弄成一个应用加固的方案？ <!-- 这技术对优化我们系统cps打包有帮助？ -->
+</li>
 </ul>
 <h4 id="其他参考">其他参考</h4><ul>
 <li>天猫团队的<a href="http://lirenlong.github.io/hotfix/#rd?sukey=fc78a68049a14bb2b122280ebdec7b39605209290860f5335634251c8fde8b4b7748618df85e7db8417f92b1536d83fe" target="_blank" rel="external">Android App 线上热修复方案</a></li>
 <li>QZone团队的<a href="http://bugly.qq.com/blog/?p=781" target="_blank" rel="external">让App像Web一样发布新版本</a></li>
 <li>QZone那位同学的<a href="https://github.com/jiqimaogou">github</a></li>
 <li><a href="http://blog.csdn.net/lzyzsd/article/details/49843581" target="_blank" rel="external">Android热更新实现原理</a></li>
+<li><a href="http://blog.zhaiyifan.cn/2015/11/20/HotPatchCompare/" target="_blank" rel="external">各大热补丁方案分析和比较</a></li>
 </ul>
 
       
